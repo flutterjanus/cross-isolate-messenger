@@ -19,19 +19,6 @@ It uses `SharedPreferences` under the hood for durability, making it ideal for n
 
 > ✅ **Native platforms only** – This package relies on `SharedPreferences`, so it will not function on web or unsupported platforms like Windows or Linux (without `SharedPreferences` support).
 
----
-
-## 🚀 Installation
-
-```yaml
-dependencies:
-  cross_isolate_messenger: 1.0.0
-````
-
-Then include your cross isolate queue code in your project.
-
----
-
 ## 🛠 Usage
 
 ### 1. Create an instance (per channel)
@@ -112,9 +99,7 @@ await queue.dispose();
 
 ## 📄 License
 
-MIT or your preferred license.
-
----
+MIT 
 
 ## 👷 TODO
 
