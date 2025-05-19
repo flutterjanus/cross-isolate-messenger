@@ -101,9 +101,6 @@ await queue.dispose();
 ## ⚠ Limitations
 
 * ❌ Not supported on **web** or **desktop platforms** without `SharedPreferences`.
-* 📦 Not yet packaged as a Flutter/Dart plugin (you’ll need to copy the utility code).
-* 🧪 Currently single-process only. For true multi-process communication, use platform channels.
-
 ---
 
 ## 📚 Related
@@ -123,13 +120,3 @@ MIT or your preferred license.
 
 * [ ] Add fallback for unsupported platforms
 * [ ] Add testing harness for isolate message passing
-
----
-
-> Developed for native Flutter apps that require persistent, simple isolate communication.
-
-```
-
----
-
-Let me know if you’d like a `pubspec.yaml`, example project structure, or a GitHub-ready version with badges!
