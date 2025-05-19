@@ -1,4 +1,10 @@
 # 📨 Cross Isolate Messenger
+[![januscaler](https://img.shields.io/badge/powered_by-JanuScaler-b?style=for-the-badge&logo=Januscaler&logoColor=%238884ED&label=Powered%20By&labelColor=white&color=%238884ED)](https://januscaler.com)  
+
+[![pub package](https://img.shields.io/pub/v/cross_isolate_messenger.svg)](https://pub.dartlang.org/packages/cross_isolate_messenger)
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 **Cross Isolate Messenger** is a lightweight Dart utility for message passing and persistence across multiple Dart isolates in Flutter applications.
 
