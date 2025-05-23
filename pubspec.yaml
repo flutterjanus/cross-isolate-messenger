@@ -2,7 +2,7 @@ name: cross_isolate_messenger
 description: >
   A lightweight utility for message passing between Dart isolates with 
   persistent storage using SharedPreferences. Designed for native Flutter apps.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/flutterjanus
 
 environment:

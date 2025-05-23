@@ -6,79 +6,66 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-**Cross Isolate Messenger** is a lightweight Dart utility for message passing and persistence across multiple Dart isolates in Flutter applications.
+**Cross Isolate Messenger** is a lightweight Dart utility for reliable message passing and durability across Flutter isolates.
 
-It uses `SharedPreferences` under the hood for durability, making it ideal for native platforms (Android, iOS, macOS) where isolates might need to resume processing messages after being restarted or delayed.
+It ensures that messages are not lost during app lifecycle events by persisting them using `SharedPreferences`, and allows seamless replay and garbage collection.
 
 ---
 
 ## ✨ Features
 
-- 🔄 **Message persistence**: Messages are stored in `SharedPreferences` until acknowledged.
-- 🚦 **Isolate communication**: Broadcast messages across Dart isolates using named channels.
-- 🧠 **LRU cache-based deduplication**: Prevents duplicate processing across restarts or replay.
-- 🧱 **Generic and extensible**: Supports custom classes via decoders and multiple message streams via unique `portName`s.
+- 📨 **Reliable queue**: Ensures messages sent from background isolates reach the UI.
+- 🔁 **Replay & persistence**: Messages are stored and replayed until acknowledged.
+- 🧼 **Garbage collection**: Acknowledged messages are purged automatically.
+- 🔀 **Stream-based**: UI receives messages via `Stream<T>`.
+- 🔗 **IsolateNameServer**: Automatically manages isolate communication.
 
 ---
 
 ## 🧩 Requirements
 
-> ✅ **Native platforms only** – This package relies on `SharedPreferences`, so it will not function on web or unsupported platforms like Windows or Linux (without `SharedPreferences` support).
-
-## 🛠 Usage
-
-### 1. Create an instance (per channel)
-
-```dart
-final queue = CrossIsolateQueue<Map<String, dynamic>>.getInstance('chat_channel');
-await queue.initialize();
-
-queue.stream.listen((msg) {
-  print('Received message: $msg');
-});
-```
-
-### 2. Send a message from another isolate
-
-```dart
-await CrossIsolateQueue.send('chat_channel', {
-  'id': 'message-001',
-  'content': 'Hello from another isolate!',
-});
-```
-
-### 3. Acknowledge a message
-
-```dart
-await queue.ack('message-001');
-```
+> ✅ **Only for native platforms (Android, iOS, macOS)** – Uses `SharedPreferences`.
 
 ---
 
-## 🔁 Custom Message Types
+## 🚀 Usage
 
-Define a class and a decoder:
+### Define your message
 
 ```dart
 class MyMessage {
   final String id;
-  final String content;
+  final String payload;
+  MyMessage(this.id, this.payload);
 
-  MyMessage(this.id, this.content);
-
-  factory MyMessage.fromJson(Map<String, dynamic> json) =>
-      MyMessage(json['id'], json['content']);
+  Map<String, dynamic> toJson() => {'id': id, 'payload': payload};
+  static MyMessage fromJson(Map<String, dynamic> json) =>
+      MyMessage(json['id'], json['payload']);
 }
 ```
 
-Use the decoder when creating the queue:
+### UI Isolate (Main isolate)
 
 ```dart
-final customQueue = CrossIsolateQueue<MyMessage>.getInstance(
-  'custom_channel',
-  decoder: (json) => MyMessage.fromJson(json),
+final queue = await PersistentQueue.getInstance<MyMessage>(
+  MyMessage.fromJson,
+  (msg) => msg.toJson(),
 );
-await customQueue.initialize();
+queue.bindUIIsolate();
+queue.stream.listen((msg) async {
+  print("Received: \${msg.payload}");
+  await queue.ack(msg.id);
+});
+```
+
+### Background Isolate
+
+```dart
+final queue = await PersistentQueue.getInstance<MyMessage>(
+  MyMessage.fromJson,
+  (msg) => msg.toJson(),
+);
+await queue.send(MyMessage('msg-id-001', 'Hello from background isolate!'));
 ```
 
 ---
@@ -86,14 +73,42 @@ await customQueue.initialize();
 ## 🧼 Clean Up
 
 ```dart
-await queue.dispose();
+await queue.clearAll();
 ```
 
 ---
 
-## ⚠ Limitations
+## 📦 Full Example
 
-* ❌ Not supported on **web** or **desktop platforms** without `SharedPreferences`.
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final queue = await PersistentQueue.getInstance<MyMessage>(
+    MyMessage.fromJson,
+    (msg) => msg.toJson(),
+  );
+  queue.bindUIIsolate();
+  queue.stream.listen((msg) async {
+    print("UI Isolate received: \${msg.payload}");
+    await queue.ack(msg.id);
+  });
+
+  Isolate.spawn(runBackgroundIsolate, null);
+
+  runApp(const MaterialApp(home: Scaffold(body: Center(child: Text('PersistentQueue Example')))));
+}
+
+void runBackgroundIsolate(_) async {
+  final queue = await PersistentQueue.getInstance<MyMessage>(
+    MyMessage.fromJson,
+    (msg) => msg.toJson(),
+  );
+
+  await queue.send(MyMessage('msg-id-\${DateTime.now().millisecondsSinceEpoch}', 'Hello from background isolate!'));
+}
+```
+
 ---
 
 ## 📚 Related
@@ -105,9 +120,9 @@ await queue.dispose();
 
 ## 📄 License
 
-MIT 
+MIT
 
 ## 👷 TODO
 
-* [ ] Add fallback for unsupported platforms
-* [ ] Add testing harness for isolate message passing
+- [ ] Add support for desktop platforms via alternative storage
+- [ ] Add tests for isolate communication reliability
